@@ -32,6 +32,9 @@ setGameParameters = (ev) => {
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				const res = JSON.parse(this.responseText);
+
+				console.log('RES', res)
+
 				for( let track of res.tracks){
 					console.log(track);
 					tracks.push(track);

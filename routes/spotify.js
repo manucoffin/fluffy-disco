@@ -17,6 +17,11 @@ var client_id = '96263c9c41634fe8b5ca6b8750d09af7'; // Your client id
 var client_secret = '98389435816641ddbea66939b2961397'; // Your secret
 var redirect_uri = 'http://localhost:3000/spotify/callback/'; // Your redirect uri
 
+var access_token,
+    refresh_token,
+    user_id,
+    playlist_id;
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
@@ -83,8 +88,8 @@ router.get('/callback', function(req, res) {
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
 
-        var access_token = body.access_token,
-            refresh_token = body.refresh_token;
+        access_token = body.access_token;
+        refresh_token = body.refresh_token;
 
         var options = {
           url: 'https://api.spotify.com/v1/me',
@@ -139,10 +144,10 @@ router.get('/refresh_token', function(req, res) {
 });
 
 router.get('/search/:query/:title', function(req, res){
-	var query = req.params.query;
+	var searchFilters = req.params.query;
 	var title = req.params.title;
 	// Create a playlist
-	var user_id = req.cookies.user_id;
+	user_id = req.cookies.user_id;
 
 	var refresh_token = req.cookies.refresh_token;
 
@@ -162,8 +167,9 @@ router.get('/search/:query/:title', function(req, res){
 	request.post(authOptions, function(error, response, body) {
 	  if (!error && response.statusCode === 200) {
 	    var access_token = body.access_token
-	  
-			var options = {
+
+			// Create a playlist named with the variable 'title'	  
+			var playlistOptions = {
 		    url: "https://api.spotify.com/v1/users/"+ user_id +"/playlists",
 		    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
 		    json: true,
@@ -172,70 +178,125 @@ router.get('/search/:query/:title', function(req, res){
 		    }
 		  };
 
-		  // Create a playlist named with the variable 'title'
-			request.post(options, function(error, response, body){
-				let playlist_id = body.id;
+			request.post(playlistOptions, function(error, response, body){
+				playlist_id = body.id;
 				let playlist_uri = body.uri;
-				let playlistQuery = "https://api.spotify.com/v1/search?q="+ query +"&type=track";
+				const limit = 6;
+				const offset = Math.round(Math.random() * 500);
+				let searchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-				var playlistOptions = {
-			    url: playlistQuery,
-			    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-			  };
 
-			  // Search for tracks to add to the playlist
-				request.get(playlistOptions, function(error, response, body){
-				  if (!error && response.statusCode === 200) {
-				 
-				  	tracks = JSON.parse(body).tracks.items;
+				searchSongs(res, searchQuery, offset, searchFilters, limit);
 
-				  	let ids = '';
-				  	let uris = '';
+				// // Search for tracks to add to the playlist
+				// var searchOptions = {
+			 //    url: searchQuery,
+			 //    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+			 //  };
 
-				  	tracks.forEach( (track, index) => {
-				  		let comma = (index != tracks.length - 1)? ',': '';
-				  		ids += track.id + comma;
-				  		uris += track.uri + comma;
-				  	});
+				// request.get(searchOptions, function(error, response, body){
+				//   if (!error && response.statusCode === 200) {
+				//   	tracks = JSON.parse(body).tracks.items;
+				//   	console.log('NOERROR :::::::::::::::::::::::::::', tracks);
 
-				  	// Add tracks to the playlist
-				  	var addTrackOptions = {
-				  		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
-				  		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
-				  		json: true,
-				  	}
+				//   	if(!tracks.length) {
+
+				//   	}
+
+				//   	let ids = '';
+				//   	let uris = '';
+
+				//   	tracks.forEach( (track, index) => {
+				//   		let comma = (index != tracks.length - 1)? ',': '';
+				//   		ids += track.id + comma;
+				//   		uris += track.uri + comma;
+				//   	});
+
+
+				//   	// Add tracks to the playlist
+				//   	var addTrackOptions = {
+				//   		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
+				//   		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
+				//   		json: true,
+				//   	}
 				  	
-				  	request.post(addTrackOptions, function(error, response, body){
-
-				  		// Relink tracks so that we always get valid preview_url
-					  	var relinkTracksOptions = {
-						    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
-						    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-						  };
-					  	request.get(relinkTracksOptions, (error, response, body) => {
-					  		res.send(body);
-					  	});
-				  	})
+				//   	request.post(addTrackOptions, function(error, response, body){
 
 
-
-
-				  	
-
-
-				  }
-				});
-			});
-
-			// Request for songs
-
-			// Add to playlist
-
-			// Send back playlist
-			
-		  
+				//   		// Relink tracks so that we always get valid preview_url
+				// 	  	var relinkTracksOptions = {
+				// 		    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
+				// 		    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+				// 		  };
+				// 	  	request.get(relinkTracksOptions, (error, response, body) => {
+				// 	  		res.send(body);
+				// 	  	});
+				//   	})
+				//   }
+				// });
+			});	
 	  }      	
 	})  
 })
+
+searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
+	// Search for tracks to add to the playlist
+	var searchOptions = {
+    url: searchQuery,
+    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+  };
+
+	request.get(searchOptions, function(error, response, body){
+		console.log(previousOffset);
+		console.log(response.statusCode);
+		console.log(playlist_id);
+
+		if(response.statusCode !== 200){
+			const offset = Math.round(Math.random() * previousOffset);
+
+			searchSongs(res, searchQuery, offset, searchFilters);			
+		}
+	  else if (!error && response.statusCode === 200) {
+	  	tracks = JSON.parse(body).tracks.items;
+	  	console.log('NOERROR :::::::::::::::::::::::::::', tracks);
+
+	  	// If the query return no tracks, make a new query with a lower offset
+	  	if(tracks.length <= limit) {
+				const offset = Math.round(Math.random() * previousOffset);
+
+				searchSongs(res, searchQuery, offset, searchFilters);
+	  	}
+	  	else {
+		  	let ids = '';
+		  	let uris = '';
+
+		  	tracks.forEach( (track, index) => {
+		  		let comma = (index != tracks.length - 1)? ',': '';
+		  		ids += track.id + comma;
+		  		uris += track.uri + comma;
+		  	});
+
+		  	// Add tracks to the playlist
+		  	var addTrackOptions = {
+		  		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
+		  		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
+		  		json: true,
+		  	}
+		  	
+		  	request.post(addTrackOptions, function(error, response, body){
+
+		  		// Relink tracks so that we always get valid preview_url
+			  	var relinkTracksOptions = {
+				    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
+				    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+				  };
+			  	request.get(relinkTracksOptions, (error, response, body) => {
+			  		res.send(body);
+			  	});
+		  	})
+		  }
+	  }
+	});
+}
 
 module.exports = router;

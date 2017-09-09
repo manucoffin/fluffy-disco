@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  h1 Troll Blindtest
+
+  form(id="add-player-form")
+    div(class="form-group")
+      label Player name:
+      input(type="text" placeholder="" class="player-name" value="thibault")
+
+    input(type="button" id="add-player-btn" value="Add a player")
+
+	
+  form
+    label Playlist name: 
+    input(type="text" placeholder="" id="playlist-title" value="playlist")
+    <br/>
+    label Search:
+    input(type="text" placeholder="" id="search-form-query" value="metallica")
+    <br/>
+    label Filers:
+    <br/>
+    label Keywords
+      input(type="radio" name="filter" value="keywords" id="keywords-radio")
+    label Artists
+      input(type="radio" name="filter" value="artist" id="artist-radio" checked)
+    //- label Playlist
+    //-   input(type="radio" name="filter" value="playlist" id="playlist-radio")
+    label Genre
+      input(type="radio" name="filter" value="genre" id="genre-radio")
+    label Year
+      input(type="radio" name="filter" value="year" id="year-radio")    
+    <br/>
+    input(type="button" id="search-form-submit" value="submit")
+  <br/>
+  <br/>
+  button(id="trigger") Play
+  button(id='next') Next
+  button(id='answer') Answer
+
+  div(id="answer-container")
+
+  script(src="/javascripts/game-parameters.js")
+  script(src="/javascripts/player.js")
+  script(src="/javascripts/init.js")

@@ -2,6 +2,10 @@ var playerInit = function(tracks){
 	var current = 0;
 	var current_track = new Audio();
 
+	console.log(current_track);
+	console.log(tracks)
+
+
 	let music_trigger = document.getElementById('trigger');
 	let next_button = document.getElementById('next');
 	let answer_button = document.getElementById('answer');

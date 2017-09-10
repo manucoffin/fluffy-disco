@@ -5,12 +5,19 @@ gameParametersInit = () => {
 	add_player_btn.addEventListener('click', addPlayer, false);
 
 	submit.addEventListener('click', (ev) => {
+		let tracks = [];
+		
 		setGameParameters(ev)
 		.then((params) => {
-			let tracks = params.tracks;
+			tracks = params.tracks;
 			let players = params.players;
 
+			console.log(tracks);
+
 			playerInit(tracks);
+		},
+		(err) => {
+			console.log('Set Game Parameters Failed.', err)
 		});
 	}, false);
 }
@@ -38,11 +45,11 @@ setGameParameters = (ev) => {
 				let params = {tracks: tracks, players: players};
 				resolve(params);
 			}
-			else{
-				console.log(this.status);
-				console.log(this.readyState);
-			}
 		};
+		xhttp.onerror = (e) => {
+			console.log('Tere was an error', e.target.status);
+			reject();
+		}
 		xhttp.open("GET", "/spotify/search/" + query + "/" + title.value, true);
 		xhttp.send();
 	});

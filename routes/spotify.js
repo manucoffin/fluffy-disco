@@ -184,7 +184,7 @@ searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
 		// Request can fail because of a too high offset
 		if(response.statusCode !== 200){
 			console.log('SEARCH REQUEST FAILED', response.statusCode);
-			recallSearchSongs(res, searchFilters, limit, previousOffset);
+			updateQueryCriterias(res, searchFilters, limit, previousOffset);
 		}
 	  else if (!error && response.statusCode === 200) {
 	  	console.log('SEARCH REQUEST SUCCESS', response.statusCode);
@@ -192,7 +192,7 @@ searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
 
 	  	// If the query return no tracks, make a new query with a lower offset
 	  	if(tracks.length < limit) {
-				recallSearchSongs(res, searchFilters, limit, previousOffset);
+				updateQueryCriterias(res, searchFilters, limit, previousOffset);
 	  	}
 	  	else {
 		  	let ids = '';
@@ -227,10 +227,15 @@ searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
 
 			  		// While the array is not complete, continue to search songs
 			  		if(songs_array.length < 30){
-			  			recallSearchSongs(res, searchFilters, limit, previousOffset);
+			  			updateQueryCriterias(res, searchFilters, limit, previousOffset);
 			  		}
 			  		else {
-			  			res.send(songs_array);	
+			  			res.send(
+				  			{
+					  			tracks: songs_array,
+					  			playlist_id: playlist_id
+				  			}
+			  			);	
 			  		}
 			  	});
 		  	})
@@ -239,10 +244,21 @@ searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
 	});
 }
 
-function recallSearchSongs(res, searchFilters, limit, previousOffset) {
+function updateQueryCriterias(res, searchFilters, limit, previousOffset) {
 	const offset = Math.round(Math.random() * previousOffset);
 	let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 	searchSongs(res, newSearchQuery, offset, searchFilters, limit);
 }
+
+router.get('/playlist/delete/:id', (req, res, next)=>{
+	let playlist_id = req.params.id;
+
+	var deletePlaylistOptions = {
+    url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/followers',
+    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+  };
+
+	request.del(deletePlaylistOptions);
+});
 
 module.exports = router;

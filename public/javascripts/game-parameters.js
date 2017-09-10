@@ -38,12 +38,17 @@ setGameParameters = (ev) => {
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				tracks = JSON.parse(this.responseText);
+				tracks = JSON.parse(this.responseText).tracks;
+				let playlist_id = JSON.parse(this.responseText).playlist_id;
 
 				players = createPlayers();
 
 				let params = {tracks: tracks, players: players};
 				resolve(params);
+
+				deletePlaylist(playlist_id).then(()=>{
+					console.log('playlist deleted')
+				});
 			}
 		};
 		xhttp.onerror = (e) => {
@@ -85,4 +90,22 @@ addPlayer = (ev) => {
 	form_group.appendChild(input);
 	
 	add_player_form.insertBefore(form_group, add_player_form.firstChild);
+}
+
+deletePlaylist = (id)=>{
+	return new Promise((resolve, reject) => {
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				resolve();
+			}
+		};
+		xhttp.onerror = (e) => {
+			console.log('Tere was an error', e.target.status);
+			reject();
+		}
+		xhttp.open("GET", "/spotify/playlist/delete/" + id, true);
+		xhttp.send();
+	});
 }

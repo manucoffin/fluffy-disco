@@ -57,7 +57,6 @@ router.get('/login', function(req, res) {
 });
 
 router.get('/callback', function(req, res) {
-
   // your application requests refresh and access tokens
   // after checking the state parameter
 
@@ -99,7 +98,6 @@ router.get('/callback', function(req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
-        	console.log(body);
         	res.cookie('user_id', body.id);
         	res.cookie('refresh_token', refresh_token);
 
@@ -185,55 +183,7 @@ router.get('/search/:query/:title', function(req, res){
 				const offset = Math.round(Math.random() * 500);
 				let searchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-
 				searchSongs(res, searchQuery, offset, searchFilters, limit);
-
-				// // Search for tracks to add to the playlist
-				// var searchOptions = {
-			 //    url: searchQuery,
-			 //    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-			 //  };
-
-				// request.get(searchOptions, function(error, response, body){
-				//   if (!error && response.statusCode === 200) {
-				//   	tracks = JSON.parse(body).tracks.items;
-				//   	console.log('NOERROR :::::::::::::::::::::::::::', tracks);
-
-				//   	if(!tracks.length) {
-
-				//   	}
-
-				//   	let ids = '';
-				//   	let uris = '';
-
-				//   	tracks.forEach( (track, index) => {
-				//   		let comma = (index != tracks.length - 1)? ',': '';
-				//   		ids += track.id + comma;
-				//   		uris += track.uri + comma;
-				//   	});
-
-
-				//   	// Add tracks to the playlist
-				//   	var addTrackOptions = {
-				//   		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
-				//   		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
-				//   		json: true,
-				//   	}
-				  	
-				//   	request.post(addTrackOptions, function(error, response, body){
-
-
-				//   		// Relink tracks so that we always get valid preview_url
-				// 	  	var relinkTracksOptions = {
-				// 		    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
-				// 		    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-				// 		  };
-				// 	  	request.get(relinkTracksOptions, (error, response, body) => {
-				// 	  		res.send(body);
-				// 	  	});
-				//   	})
-				//   }
-				// });
 			});	
 	  }      	
 	})  
@@ -247,24 +197,26 @@ searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
   };
 
 	request.get(searchOptions, function(error, response, body){
-		console.log(previousOffset);
-		console.log(response.statusCode);
-		console.log(playlist_id);
+		console.log(searchQuery);
 
 		if(response.statusCode !== 200){
+			console.log('status !== 200', error );
 			const offset = Math.round(Math.random() * previousOffset);
+			let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-			searchSongs(res, searchQuery, offset, searchFilters);			
+			searchSongs(res, newSearchQuery, offset, searchFilters, limit);			
 		}
 	  else if (!error && response.statusCode === 200) {
+
 	  	tracks = JSON.parse(body).tracks.items;
-	  	console.log('NOERROR :::::::::::::::::::::::::::', tracks);
+			console.log(tracks.length);
 
 	  	// If the query return no tracks, make a new query with a lower offset
-	  	if(tracks.length <= limit) {
+	  	if(tracks.length < limit) {
 				const offset = Math.round(Math.random() * previousOffset);
+				let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-				searchSongs(res, searchQuery, offset, searchFilters);
+				searchSongs(res, newSearchQuery, offset, searchFilters, limit);
 	  	}
 	  	else {
 		  	let ids = '';

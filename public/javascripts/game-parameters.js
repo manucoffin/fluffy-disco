@@ -31,21 +31,16 @@ setGameParameters = (ev) => {
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				const res = JSON.parse(this.responseText);
+				tracks = JSON.parse(this.responseText);
 
-				console.log('RES', res)
-
-				for( let track of res.tracks){
-					console.log(track);
-					tracks.push(track);
-				}
 				players = createPlayers();
 
 				let params = {tracks: tracks, players: players};
 				resolve(params);
 			}
 			else{
-
+				console.log(this.status);
+				console.log(this.readyState);
 			}
 		};
 		xhttp.open("GET", "/spotify/search/" + query + "/" + title.value, true);

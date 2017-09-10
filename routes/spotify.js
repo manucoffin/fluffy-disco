@@ -20,7 +20,8 @@ var redirect_uri = 'http://localhost:3000/spotify/callback/'; // Your redirect u
 var access_token,
     refresh_token,
     user_id,
-    playlist_id;
+    playlist_id,
+    songs_array = [];
 
 /**
  * Generates a random string containing numbers and letters
@@ -98,6 +99,7 @@ router.get('/callback', function(req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
+        	user_id = body.id;
         	res.cookie('user_id', body.id);
         	res.cookie('refresh_token', refresh_token);
 
@@ -133,7 +135,7 @@ router.get('/refresh_token', function(req, res) {
 
   request.post(authOptions, function(error, response, body) {
     if (!error && response.statusCode === 200) {
-      var access_token = body.access_token;
+      access_token = body.access_token;
       res.send({
         'access_token': access_token
       });
@@ -145,26 +147,26 @@ router.get('/search/:query/:title', function(req, res){
 	var searchFilters = req.params.query;
 	var title = req.params.title;
 	// Create a playlist
-	user_id = req.cookies.user_id;
+	// user_id = req.cookies.user_id;
 
-	var refresh_token = req.cookies.refresh_token;
+	// var refresh_token = req.cookies.refresh_token;
 
-	var authOptions = {
-	  url: 'https://accounts.spotify.com/api/token',
-	  form: {
-	    grant_type: 'refresh_token',
-	    refresh_token: refresh_token
-	  },
-	  headers: {
-	    'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-	  },
-	  json: true
-	};
+	// var authOptions = {
+	//   url: 'https://accounts.spotify.com/api/token',
+	//   form: {
+	//     grant_type: 'refresh_token',
+	//     refresh_token: refresh_token
+	//   },
+	//   headers: {
+	//     'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+	//   },
+	//   json: true
+	// };
 
 	// Connect to API
-	request.post(authOptions, function(error, response, body) {
-	  if (!error && response.statusCode === 200) {
-	    var access_token = body.access_token
+	// request.post(authOptions, function(error, response, body) {
+	  // if (!error && response.statusCode === 200) {
+	    // var access_token = body.access_token
 
 			// Create a playlist named with the variable 'title'	  
 			var playlistOptions = {
@@ -180,75 +182,90 @@ router.get('/search/:query/:title', function(req, res){
 				playlist_id = body.id;
 				let playlist_uri = body.uri;
 				const limit = 6;
-				const offset = Math.round(Math.random() * 500);
-				let searchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
+				let promises = [];
 
-				searchSongs(res, searchQuery, offset, searchFilters, limit);
+				for (var i = 0; i < 5; i++) {
+					const offset = Math.round(Math.random() * 500);
+
+					let searchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
+
+					promises[i] = searchSongs(res, searchQuery, offset, searchFilters, limit);
+				}
+
+				Promise.all(promises).then(()=>{
+					console.log('promise.all');
+					res.send(songs_array);
+				})
 			});	
-	  }      	
-	})  
+	  // }      	
+	// })  
 })
 
 searchSongs = (res, searchQuery, previousOffset, searchFilters, limit) => {
-	// Search for tracks to add to the playlist
-	var searchOptions = {
-    url: searchQuery,
-    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-  };
+	return new Promise((resolve, reject)=>{
+		// Search for tracks to add to the playlist
+		var searchOptions = {
+	    url: searchQuery,
+	    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+	  };
 
-	request.get(searchOptions, function(error, response, body){
-		console.log(searchQuery);
+		request.get(searchOptions, function(error, response, body){
 
-		if(response.statusCode !== 200){
-			console.log('status !== 200', error );
-			const offset = Math.round(Math.random() * previousOffset);
-			let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-			searchSongs(res, newSearchQuery, offset, searchFilters, limit);			
-		}
-	  else if (!error && response.statusCode === 200) {
-
-	  	tracks = JSON.parse(body).tracks.items;
-			console.log(tracks.length);
-
-	  	// If the query return no tracks, make a new query with a lower offset
-	  	if(tracks.length < limit) {
+			if(response.statusCode !== 200){
+				console.log('status !== 200', error );
 				const offset = Math.round(Math.random() * previousOffset);
 				let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
 
-				searchSongs(res, newSearchQuery, offset, searchFilters, limit);
-	  	}
-	  	else {
-		  	let ids = '';
-		  	let uris = '';
+				searchSongs(res, newSearchQuery, offset, searchFilters, limit);			
+			}
+		  else if (!error && response.statusCode === 200) {
+				console.log('status === 200', error );
 
-		  	tracks.forEach( (track, index) => {
-		  		let comma = (index != tracks.length - 1)? ',': '';
-		  		ids += track.id + comma;
-		  		uris += track.uri + comma;
-		  	});
+		  	tracks = JSON.parse(body).tracks.items;
 
-		  	// Add tracks to the playlist
-		  	var addTrackOptions = {
-		  		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
-		  		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
-		  		json: true,
+		  	// If the query return no tracks, make a new query with a lower offset
+		  	if(tracks.length < limit) {
+					const offset = Math.round(Math.random() * previousOffset);
+					let newSearchQuery = "https://api.spotify.com/v1/search?q="+ searchFilters +"&type=track&limit="+ limit + "&offset=" + offset;
+
+					searchSongs(res, newSearchQuery, offset, searchFilters, limit);
 		  	}
-		  	
-		  	request.post(addTrackOptions, function(error, response, body){
+		  	else {
+			  	let ids = '';
+			  	let uris = '';
 
-		  		// Relink tracks so that we always get valid preview_url
-			  	var relinkTracksOptions = {
-				    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
-				    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-				  };
-			  	request.get(relinkTracksOptions, (error, response, body) => {
-			  		res.send(body);
+			  	tracks.forEach( (track, index) => {
+			  		let comma = (index != tracks.length - 1)? ',': '';
+			  		ids += track.id + comma;
+			  		uris += track.uri + comma;
 			  	});
-		  	})
+
+			  	// Add tracks to the playlist
+			  	var addTrackOptions = {
+			  		url: 'https://api.spotify.com/v1/users/'+ user_id +'/playlists/'+ playlist_id +'/tracks?uris=' + uris,
+			  		headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' },
+			  		json: true,
+			  	}
+			  	
+			  	request.post(addTrackOptions, function(error, response, body){
+
+			  		// Relink tracks so that we always get valid preview_url
+				  	var relinkTracksOptions = {
+					    url: 'https://api.spotify.com/v1/tracks/?ids=' + ids + '&market=FR',
+					    headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
+					  };
+				  	request.get(relinkTracksOptions, (error, response, body) => {
+				  		JSON.parse(body).tracks.map((track)=>{
+				  			songs_array.push(track);
+				  		})
+				  		resolve();
+				  	});
+			  	})
+			  }
 		  }
-	  }
-	});
+		});
+	});	
 }
 
 module.exports = router;

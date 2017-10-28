@@ -7,6 +7,35 @@ $green: rgb(30, 215, 96);
 $grey: rgb(40,40,40);
 $light-grey: rgb(157, 157, 157);
 
+$button-height: 40px;
+
+
+header{
+  padding: 3rem 2rem 0 2rem;
+  
+  h1{
+    font-family: "Dosis";
+    font-size: 2rem;
+  }
+}
+
+.button {
+  background: none;
+  color: $green;
+  border: solid 2px $green;
+  height: $button-height;
+  border-radius: #{ $button-height /2 };
+  padding-left: 2rem;
+  padding-right: 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: white;
+    border: solid 2px white;
+  }
+}
+
 a{
   color: $light-grey;
 
@@ -30,4 +59,116 @@ body{
   background-image: linear-gradient(rgb(58, 72, 94), rgb(5, 7, 9) 100%);
   background-repeat: no-repeat;
   color: white;
+}
+
+.Site {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.Site-content {
+  flex: 1;
+}
+
+form {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+
+  .form-group {
+    padding: .5rem;
+
+    input {
+      background: transparent;
+      color: white;
+      border: none;
+      height: 100%;
+      outline: none;
+      caret-color: $green;
+      font-weight: 700;
+    }
+
+    &.search-bar {
+      font-size: 4rem;
+
+      input {
+        text-align: center;
+      }
+    }
+
+    &.radio {
+      display: flex;
+      justify-content: space-between;
+
+      .filter-choice {
+        flex-basis: 25%;
+        text-align: center;
+        
+        input[type="radio"] {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        
+        input[type="radio"]:active ~ label {
+          opacity: 1;
+        }
+        
+        input[type="radio"]:checked ~ label {
+          opacity: 1;
+          color: white;
+          border: 1px solid $green;
+        }
+        
+        label {
+          border: 1px solid rgba($green,.15);
+          padding: .5rem 2rem;
+          border-radius: 3px;
+          cursor: pointer;
+          opacity: .2s;
+          transition: all .2s ease-in-out;
+          &:hover, &:focus, &:active {
+            border: 1px solid rgba($green,.5);
+          }
+          color: rgba(255, 255, 255, .7);
+        }
+      }
+    }
+  }
+}
+
+.buttons-container{
+  margin: 1rem 0;
+}
+
+.app-container{
+  max-width: 900px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.players-actions{
+  display: none;
+}
+
+#playlist-title{
+  display: none;
+}
+
+.playlist-actions{
+  width: 100%;
+}
+
+.ingame-container{
+  display:none;
+  text-align: center;
+  width: 100%;
+
+  #answer-container{
+    max-height: 1300px;
+  }
 }

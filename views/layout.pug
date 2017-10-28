@@ -6,5 +6,11 @@ html
     script(src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js")
     script(src="http://code.jquery.com/jquery-1.10.1.min.js")
     script(src="/javascripts/session.js")
-  body
-    block content
+  body(class="Site")
+    header
+      h1 Fluffy Disco
+    main(class="Site-content")
+      block content
+    footer
+      p based on the spotify api.
+      p made by Manuel Coffin and Thibault Ollivier

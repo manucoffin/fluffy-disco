@@ -5,14 +5,17 @@ gameParametersInit = () => {
 	add_player_btn.addEventListener('click', addPlayer, false);
 
 	submit.addEventListener('click', (ev) => {
-		let tracks = [];
-		
+    let tracks = [];
+    
+    console.log('submit');
 		setGameParameters(ev)
 		.then((params) => {
 			tracks = params.tracks;
 			let players = params.players;
 
-			console.log(tracks);
+      console.log(tracks);
+      document.querySelector(".playlist-actions").style.display = "none";
+      document.querySelector('.ingame-container').style.display = 'block';      
 
 			playerInit(tracks);
 		},
@@ -32,7 +35,9 @@ setGameParameters = (ev) => {
 	let input_search = document.getElementById('search-form-query').value;
 	let filter = document.querySelector('input[name="filter"]:checked').value;
 
-	let query = ( filter != 'keywords') ? filter + ':' + input_search : input_search;
+  let query = ( filter != 'keywords') ? filter + ':' + input_search : input_search;
+  
+  console.log(query);
 
 	return new Promise((resolve, reject) => {
 		var xhttp = new XMLHttpRequest();
@@ -41,10 +46,11 @@ setGameParameters = (ev) => {
 				tracks = JSON.parse(this.responseText).tracks;
 				let playlist_id = JSON.parse(this.responseText).playlist_id;
 
-				players = createPlayers();
-
+        players = createPlayers();
+        
 				let params = {tracks: tracks, players: players};
-				resolve(params);
+        resolve(params);
+        console.log(params);
 
 				deletePlaylist(playlist_id).then(()=>{
 					console.log('playlist deleted')

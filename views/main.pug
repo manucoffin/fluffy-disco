@@ -1,44 +1,43 @@
 extends layout
 
 block content
-  h1 Fluffy Disco
+  div(class="app-container")
+    div(class="players-actions")
+      form(id="player-form")
+        div(class="form-group")
+          label Player name:
+          input(type="text" placeholder="" class="player-name" value="")
 
-  form(id="add-player-form")
-    div(class="form-group")
-      label Player name:
-      input(type="text" placeholder="" class="player-name" value="thibault")
+        input(type="button" id="add-player-btn" value="Add a player")
 
-    input(type="button" id="add-player-btn" value="Add a player")
-
-	
-  form
-    label Playlist name: 
-    input(type="text" placeholder="" id="playlist-title" value="playlist")
-    <br/>
-    label Search:
-    input(type="text" placeholder="" id="search-form-query" value="metallica")
-    <br/>
-    label Filers:
-    <br/>
-    label Keywords
-      input(type="radio" name="filter" value="keywords" id="keywords-radio")
-    label Artists
-      input(type="radio" name="filter" value="artist" id="artist-radio" checked)
-    //- label Playlist
-    //-   input(type="radio" name="filter" value="playlist" id="playlist-radio")
-    label Genre
-      input(type="radio" name="filter" value="genre" id="genre-radio")
-    label Year
-      input(type="radio" name="filter" value="year" id="year-radio")    
-    <br/>
-    input(type="button" id="search-form-submit" value="submit")
-  <br/>
-  <br/>
-  button(id="trigger") Play
-  button(id='next') Next
-  button(id='answer') Answer
-
-  div(id="answer-container")
+    div(class="playlist-actions")
+      form(id="playlist-form")
+        div(class="form-group")
+          input(type="text" placeholder="" id="playlist-title" value="playlist" disabled)
+        div(class="form-group search-bar")
+          input(type="text" placeholder="Search" id="search-form-query" value="metallica")
+        div(class="form-group radio")
+          div(class="filter-choice")
+            input(type="radio" name="filter" value="keywords" id="keywords-radio")
+            label(for="keywords-radio") Keywords
+          div(class="filter-choice")
+            input(type="radio" name="filter" value="artist" id="artist-radio" checked)
+            label(for="artist-radio") Artists
+          div(class="filter-choice")
+            input(type="radio" name="filter" value="genre" id="genre-radio")
+            label(for="genre-radio") Genre
+          div(class="filter-choice")
+            input(type="radio" name="filter" value="year" id="year-radio")    
+            label(for="year-radio") Year
+        div(class="buttons-container")    
+          input(class="button" type="button" id="search-form-submit" value="search")
+    
+    div(class="ingame-container")
+      div(id="answer-container")
+      div(id="game-controler" class="buttons-container")
+        button( class="button" id="trigger") Play
+        button( class="button" id='next') Next
+        button( class="button" id='answer') Answer
 
   script(src="/javascripts/game-parameters.js")
   script(src="/javascripts/player.js")

@@ -1,0 +1,33 @@
+@import '../libs/normalize.css';
+@import url('https://fonts.googleapis.com/css?family=Dosis:800');
+@import url('https://fonts.googleapis.com/css?family=Lato:400,300');
+
+$black: rgb(7,7,7);
+$green: rgb(30, 215, 96);
+$grey: rgb(40,40,40);
+$light-grey: rgb(157, 157, 157);
+
+a{
+  color: $light-grey;
+
+  &:hover{
+    color:white;
+    transition: color 300ms;
+  }
+
+  &:active{
+    color: $green;
+  }
+}
+
+html{
+  height: 100%;
+}
+
+body{
+  font-family: "Lato";
+  height: 100%;  
+  background-image: linear-gradient(rgb(58, 72, 94), rgb(5, 7, 9) 100%);
+  background-repeat: no-repeat;
+  color: white;
+}
